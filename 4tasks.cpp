@@ -10,7 +10,7 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 100
+#define INNERLOOP 10
 #define OUTERLOOP 2000
 
 // global variables for tasks
@@ -28,6 +28,7 @@ void task4_code();
 void *task1( void *);
 void *task2( void *);
 void *task3( void *);
+void *task4( void *);
 
 // define an array for storing the period values
 long int periods[NTASKS];
@@ -148,11 +149,13 @@ int main()
   	iret[0] = pthread_create( &(thread_id[0]), &(attributes[0]), task1, NULL);
   	iret[1] = pthread_create( &(thread_id[1]), &(attributes[1]), task2, NULL);
   	iret[2] = pthread_create( &(thread_id[2]), &(attributes[2]), task3, NULL);
+	iret[3] = pthread_create( &(thread_id[3]), &(attributes[3]), task4, NULL);
 
   	// join all threads (pthread_join)
   	pthread_join( thread_id[0], NULL);
   	pthread_join( thread_id[1], NULL);
   	pthread_join( thread_id[2], NULL);
+	pthread_join( thread_id[3], NULL);
 
   	// set the next arrival time for each task. This is not the beginning of the first
 	// period, but the end of the first period and beginning of the next one. 

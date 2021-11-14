@@ -28,7 +28,7 @@ void *task3( void *);
 
 // initialization of mutexes and conditions (only for aperiodic scheduling)
 
-#define INNERLOOP 1000
+#define INNERLOOP 100
 #define OUTERLOOP 2000
 
 #define NPERIODICTASKS 3
