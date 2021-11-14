@@ -13,6 +13,11 @@
 #define INNERLOOP 10
 #define OUTERLOOP 2000
 
+// mutex semaphores
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
+
+
 // global variables for tasks
 int T1T2; // Task1 shall write something into T1T2, Task 2 shall read from it.
 int T1T4; // Task1 shall write something into T1T4, Task 4 shall read from it.
