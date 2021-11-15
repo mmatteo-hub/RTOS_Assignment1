@@ -10,19 +10,13 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 100
+#define INNERLOOP 10
 #define OUTERLOOP 2000
 
 // mutex semaphores
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
-
-// attributes for semaphores
-pthread_mutexattr_t mymutexattr;
-int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling);
-pthread_mutexattr_init(&mymutexattr);
-pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 
 // global variables for tasks
 int T1T2; // Task1 shall write something into T1T2, Task 2 shall read from it.
@@ -35,7 +29,7 @@ void task2_code();
 void task3_code();
 void task4_code();
 
-//periodic tasks
+// periodic tasks
 void *task1( void *);
 void *task2( void *);
 void *task3( void *);
@@ -142,6 +136,12 @@ int main()
       	pthread_attr_setschedparam(&(attributes[i]), &(parameters[i]));
     }
 
+	// attributes for semaphores
+	pthread_mutexattr_t mymutexattr;
+	pthread_mutexattr_init(&mymutexattr);
+	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
+	int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling);
+
 	// Initialization of semaphores according to tasks period
 	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
 	pthread_mutex_init(&mutex1, &mymutexattr);
@@ -184,7 +184,7 @@ int main()
 	// period, but the end of the first period and beginning of the next one. 
   	for (int i = 0; i < NTASKS; i++)
     	{
-      		printf ("\nMissed Deadlines Task %d=%d\n", i, missed_deadlines[i]);
+      		printf ("\nMissed Deadlines Task %d = %d\n", i, missed_deadlines[i]);
 			fflush(stdout);
     	}
 
@@ -193,31 +193,63 @@ int main()
   	exit(0);
 }
 
+// Foreach task defined, the scope written concerns the locking and unlocking of different semaphores
+// which regulate the writing and reading from the globla variables declared.
+// It is used P(Sn) to indicate that a task has joined a critical section while V(Sn) is printed
+// when a task goes out from a critical section after hving released the semaphore.
+
+// Every task has some for loops to make them loose some time during the execution and make the output more readable
+
 // application specific task_1 code
 void task1_code()
 {
 	//print the id of the current task
   	printf(" 1[ "); fflush(stdout);
+
+	double uno;
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
 	
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
 	// print to know the program is inside the critical section
-	printf("P(S1)"); fflush(stdout);
+	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
 	T1T2 += 1;
 	pthread_mutex_unlock(&mutex1);
 	// print to know the program is out the critical section
-	printf("V(S1)"); fflush(stdout);
+	printf(" V(S1) "); fflush(stdout);
+
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
 	// print to know the program is inside the critical section
-	printf("P(S2)"); fflush(stdout);
+	printf(" P(S2) "); fflush(stdout);
 	// write on the variable by adding 1 each time
 	T1T4 += 2;
 	pthread_mutex_unlock(&mutex2);
 	// print to know the program is out the critical section
-	printf("V(S2)"); fflush(stdout);
+	printf(" V(S2) "); fflush(stdout);
+
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
 
   	//print the id of the current task
   	printf(" ]1 "); fflush(stdout);
@@ -263,15 +295,50 @@ void task2_code()
 	//print the id of the current task
   	printf(" 2[ "); fflush(stdout);
 	
+  	double uno;
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
+
+	// take the semaphore
+	pthread_mutex_lock(&mutex1);
+	// print to know the program is inside the critical section
+	printf(" P(S1) "); fflush(stdout);
+	// write on the variable by adding 1 each time
+	printf(" T1T2 = %d ",T1T2); fflush(stdout);
+	pthread_mutex_unlock(&mutex1);
+	// print to know the program is out the critical section
+	printf(" V(S1) "); fflush(stdout);
+
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
+
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
 	// print to know the program is inside the critical section
-	printf("P(S1)"); fflush(stdout);
+	printf(" P(S2) "); fflush(stdout);
 	// write on the variable by adding 1 each time
-	printf("T2T3 = %d",T2T3); fflush(stdout);
+	T2T3 += 3;
 	pthread_mutex_unlock(&mutex3);
 	// print to know the program is out the critical section
-	printf("V(S1)"); fflush(stdout);
+	printf(" V(S2) "); fflush(stdout);
+
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
 
   	//print the id of the current task
   	printf(" ]2 "); fflush(stdout);
@@ -306,15 +373,34 @@ void task3_code()
 {
 	//print the id of the current task
   	printf(" 3[ "); fflush(stdout);
-	int i,j;
+
 	double uno;
-  	for (i = 0; i < OUTERLOOP; i++)
-    {
-        for (j = 0; j < INNERLOOP; j++)
-        {		
-            uno = rand()*rand()%10;
-        }
-    }
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
+
+	// take the semaphore
+	pthread_mutex_lock(&mutex3);
+	// print to know the program is inside the critical section
+	printf(" P(S1) "); fflush(stdout);
+	// write on the variable by adding 1 each time
+	printf(" T2T3 = %d ",T2T3); fflush(stdout);
+	pthread_mutex_unlock(&mutex3);
+	// print to know the program is out the critical section
+	printf(" V(S1) "); fflush(stdout);
+
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
+
 	//print the id of the current task
   	printf(" ]3 "); fflush(stdout);
 }
@@ -346,30 +432,37 @@ void *task3( void *ptr)
 void task4_code()
 {
 	//print the id of the current task
-  	printf(" 3[ "); fflush(stdout);
+  	printf(" 4[ "); fflush(stdout);
 	
+	double uno;
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
+
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
 	// print to know the program is inside the critical section
-	printf("P(S1)"); fflush(stdout);
+	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
-	printf("T1T2 = %d",T1T2); fflush(stdout);
+	printf(" T1T4 = %d" ,T1T4); fflush(stdout);
 	pthread_mutex_unlock(&mutex2);
 	// print to know the program is out the critical section
-	printf("V(S1)"); fflush(stdout);
+	printf(" V(S1) "); fflush(stdout);
 
-	// take the semaphore
-	pthread_mutex_lock(&mutex3);
-	// print to know the program is inside the critical section
-	printf("P(S2)"); fflush(stdout);
-	// write on the variable by adding 1 each time
-	T2T3 += 3;
-	pthread_mutex_unlock(&mutex3);
-	// print to know the program is out the critical section
-	printf("V(S2)"); fflush(stdout);
+  	for (int i = 0; i < OUTERLOOP; i++)
+	{
+		for (int j = 0; j < INNERLOOP; j++)
+		{
+			uno = rand()*rand()%10;
+		}
+	}
 
   	//print the id of the current task
-  	printf(" ]3 "); fflush(stdout);
+  	printf(" ]4 "); fflush(stdout);
 }
 
 void *task4( void *ptr)
