@@ -82,7 +82,7 @@ int main()
 
         // compute the Worst Case Execution Time (in real time it should be repeated more times)
         WCET[i]= 1000000000*(time_2.tv_sec - time_1.tv_sec)+(time_2.tv_nsec-time_1.tv_nsec);
-      	printf("\nWorst Case Execution Time %d=%f \n", i, WCET[i]);
+      	printf("\nWorst Case Execution Time %d = %f \n", i, WCET[i]);
         fflush(stdout);
     }
 
@@ -118,21 +118,21 @@ int main()
     // set the attributes to the tasks
     for(int i = 0; i < NTASKS; i++)
     {
-        //initializa the attribute structure of task i
+        // initializa the attribute structure of task i
       	pthread_attr_init(&(attributes[i]));
 
-		//set the attributes to tell the kernel that the priorities and policies are explicitly chosen,
-		//not inherited from the main thread (pthread_attr_setinheritsched) 
+		// set the attributes to tell the kernel that the priorities and policies are explicitly chosen,
+		// not inherited from the main thread (pthread_attr_setinheritsched) 
       	pthread_attr_setinheritsched(&(attributes[i]), PTHREAD_EXPLICIT_SCHED);
       
 		// set the attributes to set the SCHED_FIFO policy (pthread_attr_setschedpolicy)
 		pthread_attr_setschedpolicy(&(attributes[i]), SCHED_FIFO);
 
-		//properly set the parameters to assign the priority inversely proportional 
-		//to the period
+		// properly set the parameters to assign the priority inversely proportional 
+		// to the period
       	parameters[i].sched_priority = priomin.sched_priority + NTASKS - i;
 
-		//set the attributes and the parameters of the current thread (pthread_attr_setschedparam)
+		// set the attributes and the parameters of the current thread (pthread_attr_setschedparam)
       	pthread_attr_setschedparam(&(attributes[i]), &(parameters[i]));
     }
 
@@ -152,7 +152,7 @@ int main()
 	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[1].sched_priority);
 	pthread_mutex_init(&mutex3, &mymutexattr);
 
-    //delare the variable to contain the return values of pthread_create	
+    // delare the variable to contain the return values of pthread_create	
   	int iret[NTASKS];
 
     //declare variables to read the current time
@@ -162,7 +162,7 @@ int main()
     for (int i = 0; i < NTASKS; i++)
     {
 		long int next_arrival_nanoseconds = time_1.tv_nsec + periods[i];
-		//then we compute the end of the first period and beginning of the next one
+		// then we compute the end of the first period and beginning of the next one
 		next_arrival_time[i].tv_nsec= next_arrival_nanoseconds%1000000000;
 		next_arrival_time[i].tv_sec= time_1.tv_sec + next_arrival_nanoseconds/1000000000;
        	missed_deadlines[i] = 0;
@@ -203,7 +203,7 @@ int main()
 // application specific task_1 code
 void task1_code()
 {
-	//print the id of the current task
+	// print the id of the current task
   	printf(" 1[ "); fflush(stdout);
 
 	double uno;
@@ -221,6 +221,7 @@ void task1_code()
 	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
 	T1T2 += 1;
+	printf(" ... writing on T1T2 ... "); fflush(stdout);
 	pthread_mutex_unlock(&mutex1);
 	// print to know the program is out the critical section
 	printf(" V(S1) "); fflush(stdout);
@@ -239,6 +240,7 @@ void task1_code()
 	printf(" P(S2) "); fflush(stdout);
 	// write on the variable by adding 1 each time
 	T1T4 += 2;
+	printf(" ... writing on T1T4 ... "); fflush(stdout);
 	pthread_mutex_unlock(&mutex2);
 	// print to know the program is out the critical section
 	printf(" V(S2) "); fflush(stdout);
@@ -251,11 +253,11 @@ void task1_code()
 		}
 	}
 
-  	//print the id of the current task
+  	// print the id of the current task
   	printf(" ]1 "); fflush(stdout);
 }
 
-//thread code for task_1 (used only for temporization)
+// thread code for task_1 (used only for temporization)
 void *task1( void *ptr)
 {
 	// set thread affinity, that is the processor on which threads shall run
@@ -292,7 +294,7 @@ void *task1( void *ptr)
 
 void task2_code()
 {
-	//print the id of the current task
+	// print the id of the current task
   	printf(" 2[ "); fflush(stdout);
 	
   	double uno;
@@ -309,7 +311,7 @@ void task2_code()
 	// print to know the program is inside the critical section
 	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
-	printf(" T1T2 = %d ",T1T2); fflush(stdout);
+	printf(" read T1T2 = %d ",T1T2); fflush(stdout);
 	pthread_mutex_unlock(&mutex1);
 	// print to know the program is out the critical section
 	printf(" V(S1) "); fflush(stdout);
@@ -328,6 +330,7 @@ void task2_code()
 	printf(" P(S2) "); fflush(stdout);
 	// write on the variable by adding 1 each time
 	T2T3 += 3;
+	printf(" ... writing on T2T3 ... "); fflush(stdout);
 	pthread_mutex_unlock(&mutex3);
 	// print to know the program is out the critical section
 	printf(" V(S2) "); fflush(stdout);
@@ -340,7 +343,7 @@ void task2_code()
 		}
 	}
 
-  	//print the id of the current task
+  	// print the id of the current task
   	printf(" ]2 "); fflush(stdout);
 }
 
@@ -371,7 +374,7 @@ void *task2( void *ptr )
 
 void task3_code()
 {
-	//print the id of the current task
+	// print the id of the current task
   	printf(" 3[ "); fflush(stdout);
 
 	double uno;
@@ -388,7 +391,7 @@ void task3_code()
 	// print to know the program is inside the critical section
 	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
-	printf(" T2T3 = %d ",T2T3); fflush(stdout);
+	printf(" read T2T3 = %d ",T2T3); fflush(stdout);
 	pthread_mutex_unlock(&mutex3);
 	// print to know the program is out the critical section
 	printf(" V(S1) "); fflush(stdout);
@@ -401,7 +404,7 @@ void task3_code()
 		}
 	}
 
-	//print the id of the current task
+	// print the id of the current task
   	printf(" ]3 "); fflush(stdout);
 }
 
@@ -431,7 +434,7 @@ void *task3( void *ptr)
 
 void task4_code()
 {
-	//print the id of the current task
+	// print the id of the current task
   	printf(" 4[ "); fflush(stdout);
 	
 	double uno;
@@ -448,7 +451,7 @@ void task4_code()
 	// print to know the program is inside the critical section
 	printf(" P(S1) "); fflush(stdout);
 	// write on the variable by adding 1 each time
-	printf(" T1T4 = %d" ,T1T4); fflush(stdout);
+	printf(" read T1T4 = %d" ,T1T4); fflush(stdout);
 	pthread_mutex_unlock(&mutex2);
 	// print to know the program is out the critical section
 	printf(" V(S1) "); fflush(stdout);
@@ -461,7 +464,7 @@ void task4_code()
 		}
 	}
 
-  	//print the id of the current task
+  	// print the id of the current task
   	printf(" ]4 "); fflush(stdout);
 }
 

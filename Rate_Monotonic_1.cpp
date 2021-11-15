@@ -1,6 +1,4 @@
-//compile with: g++ -lpthread <sourcename> -o <executablename>
-
-//This exercise shows how to schedule threads with Rate Monotonic
+// compile with: g++ -lpthread <sourcename> -o <executablename>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -11,20 +9,17 @@
 #include <sys/types.h>
 #include <sys/types.h>
 
-//code of periodic tasks
+// code of periodic tasks
 void task1_code( );
 void task2_code( );
 void task3_code( );
 
-//code of aperiodic tasks (if any)
-
-//characteristic function of the thread, only for timing and synchronization
-//periodic tasks
+// periodic tasks
 void *task1( void *);
 void *task2( void *);
 void *task3( void *);
 
-//aperiodic tasks (if any)
+// aperiodic tasks (if any)
 
 // initialization of mutexes and conditions (only for aperiodic scheduling)
 
@@ -47,20 +42,20 @@ int
 main()
 {
   	// set task periods in nanoseconds
-	//the first task has period 100 millisecond
-	//the second task has period 200 millisecond
-	//the third task has period 400 millisecond
-	//you can already order them according to their priority; 
-	//if not, you will need to sort them
+	// the first task has period 100 millisecond
+	// the second task has period 200 millisecond
+	// the third task has period 400 millisecond
+	// you can already order them according to their priority; 
+	// if not, you will need to sort them
   	periods[0]= 100000000; //in nanoseconds
   	periods[1]= 200000000; //in nanoseconds
   	periods[2]= 400000000; //in nanoseconds
 
-  	//for aperiodic tasks we set the period equals to 0
+  	// for aperiodic tasks we set the period equals to 0
 
-	//this is not strictly necessary, but it is convenient to
-	//assign a name to the maximum and the minimum priotity in the
-	//system. We call them priomin and priomax.
+	// this is not strictly necessary, but it is convenient to
+	// assign a name to the maximum and the minimum priotity in the
+	// system. We call them priomin and priomax.
 
   	struct sched_param priomax;
   	priomax.sched_priority=sched_get_priority_max(SCHED_FIFO);
@@ -86,8 +81,8 @@ main()
 		struct timespec time_1, time_2;
 		clock_gettime(CLOCK_REALTIME, &time_1);
 
-		//we should execute each task more than one for computing the WCET
-		//periodic tasks
+		// we should execute each task more than one for computing the WCET
+		// periodic tasks
  	     	if (i==0)
 			task1_code();
       		if (i==1)
@@ -95,8 +90,6 @@ main()
       		if (i==2)
 			task3_code();
       		
-      		//aperiodic tasks
-
 		clock_gettime(CLOCK_REALTIME, &time_2);
 
 
