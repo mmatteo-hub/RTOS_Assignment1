@@ -18,6 +18,11 @@ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 
+// attributes for semaphores
+pthread_mutexattr_t mymutexattr;
+int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling);
+pthread_mutexattr_init(&mymutexattr);
+pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 
 // global variables for tasks
 int T1T2; // Task1 shall write something into T1T2, Task 2 shall read from it.
@@ -137,6 +142,16 @@ int main()
       	pthread_attr_setschedparam(&(attributes[i]), &(parameters[i]));
     }
 
+	// Initialization of semaphores according to tasks period
+	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
+	pthread_mutex_init(&mutex1, &mymutexattr);
+
+	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
+	pthread_mutex_init(&mutex2, &mymutexattr);
+
+	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[1].sched_priority);
+	pthread_mutex_init(&mutex3, &mymutexattr);
+
     //delare the variable to contain the return values of pthread_create	
   	int iret[NTASKS];
 
@@ -169,9 +184,12 @@ int main()
 	// period, but the end of the first period and beginning of the next one. 
   	for (int i = 0; i < NTASKS; i++)
     	{
-      		printf ("\nMissed Deadlines Task %d=%d", i, missed_deadlines[i]);
+      		printf ("\nMissed Deadlines Task %d=%d\n", i, missed_deadlines[i]);
 			fflush(stdout);
     	}
+
+	// destructor
+	pthread_mutexattr_destroy(&mymutexattr);
   	exit(0);
 }
 
@@ -180,24 +198,27 @@ void task1_code()
 {
 	//print the id of the current task
   	printf(" 1[ "); fflush(stdout);
+	
+	// take the semaphore
+	pthread_mutex_lock(&mutex1);
+	// print to know the program is inside the critical section
+	printf("P(S1)"); fflush(stdout);
+	// write on the variable by adding 1 each time
+	T1T2 += 1;
+	pthread_mutex_unlock(&mutex1);
+	// print to know the program is out the critical section
+	printf("V(S1)"); fflush(stdout);
 
-	//this double loop with random computation is only required to waste time
-	int i,j;
-	double uno;
-  	for (i = 0; i < OUTERLOOP; i++)
-    	{
-      		for (j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-    		}
-  	}
+	// take the semaphore
+	pthread_mutex_lock(&mutex2);
+	// print to know the program is inside the critical section
+	printf("P(S2)"); fflush(stdout);
+	// write on the variable by adding 1 each time
+	T1T4 += 2;
+	pthread_mutex_unlock(&mutex2);
+	// print to know the program is out the critical section
+	printf("V(S2)"); fflush(stdout);
 
-  	// when the random variable uno=0, then aperiodic task 5 must
-  	// be executed
- 
-  	// when the random variable uno=1, then aperiodic task 5 must
-  	// be executed
-  
   	//print the id of the current task
   	printf(" ]1 "); fflush(stdout);
 }
@@ -220,6 +241,9 @@ void *task1( void *ptr)
 
 		// it would be nice to check if we missed a deadline here... why don't
 		// you try by yourself?
+		struct timespec time_1;
+		clock_gettime(CLOCK_REALTIME, &time_1);
+		if(difftime(time_1.tv_nsec,next_arrival_time[0].tv_nsec) > 0) missed_deadlines[0] += 1;
 
 		// sleep until the end of the current period (which is also the start of the
 		// new one
@@ -238,16 +262,18 @@ void task2_code()
 {
 	//print the id of the current task
   	printf(" 2[ "); fflush(stdout);
-	int i,j;
-	double uno;
-  	for (i = 0; i < OUTERLOOP; i++)
-    {
-    	for (j = 0; j < INNERLOOP; j++)
-	    {
-		    uno = rand()*rand()%10;
-		}
-    }
-	//print the id of the current task
+	
+	// take the semaphore
+	pthread_mutex_lock(&mutex3);
+	// print to know the program is inside the critical section
+	printf("P(S1)"); fflush(stdout);
+	// write on the variable by adding 1 each time
+	printf("T2T3 = %d",T2T3); fflush(stdout);
+	pthread_mutex_unlock(&mutex3);
+	// print to know the program is out the critical section
+	printf("V(S1)"); fflush(stdout);
+
+  	//print the id of the current task
   	printf(" ]2 "); fflush(stdout);
 }
 
@@ -264,6 +290,10 @@ void *task2( void *ptr )
   	for (i=0; i < 100; i++)
     {
         task2_code();
+
+		struct timespec time_1;
+		clock_gettime(CLOCK_REALTIME, &time_1);
+		if(difftime(time_1.tv_nsec,next_arrival_time[1].tv_nsec) > 0) missed_deadlines[1] += 1;
 
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[1], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[1].tv_nsec + periods[1];
@@ -302,6 +332,10 @@ void *task3( void *ptr)
     {
         task3_code();
 
+		struct timespec time_1;
+		clock_gettime(CLOCK_REALTIME, &time_1);
+		if(difftime(time_1.tv_nsec,next_arrival_time[2].tv_nsec) > 0) missed_deadlines[2] += 1;
+
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[2], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[2].tv_nsec + periods[2];
         next_arrival_time[2].tv_nsec= next_arrival_nanoseconds%1000000000;
@@ -312,18 +346,30 @@ void *task3( void *ptr)
 void task4_code()
 {
 	//print the id of the current task
-  	printf(" 4[ "); fflush(stdout);
-	int i,j;
-	double uno;
-  	for (i = 0; i < OUTERLOOP; i++)
-    {
-        for (j = 0; j < INNERLOOP; j++)
-        {		
-            uno = rand()*rand()%10;
-        }
-    }
-	//print the id of the current task
-  	printf(" ]4 "); fflush(stdout);
+  	printf(" 3[ "); fflush(stdout);
+	
+	// take the semaphore
+	pthread_mutex_lock(&mutex2);
+	// print to know the program is inside the critical section
+	printf("P(S1)"); fflush(stdout);
+	// write on the variable by adding 1 each time
+	printf("T1T2 = %d",T1T2); fflush(stdout);
+	pthread_mutex_unlock(&mutex2);
+	// print to know the program is out the critical section
+	printf("V(S1)"); fflush(stdout);
+
+	// take the semaphore
+	pthread_mutex_lock(&mutex3);
+	// print to know the program is inside the critical section
+	printf("P(S2)"); fflush(stdout);
+	// write on the variable by adding 1 each time
+	T2T3 += 3;
+	pthread_mutex_unlock(&mutex3);
+	// print to know the program is out the critical section
+	printf("V(S2)"); fflush(stdout);
+
+  	//print the id of the current task
+  	printf(" ]3 "); fflush(stdout);
 }
 
 void *task4( void *ptr)
@@ -338,6 +384,10 @@ void *task4( void *ptr)
   	for (i=0; i < 100; i++)
     {
         task4_code();
+
+		struct timespec time_1;
+		clock_gettime(CLOCK_REALTIME, &time_1);
+		if(difftime(time_1.tv_nsec,next_arrival_time[3].tv_nsec) > 0) missed_deadlines[3] += 1;
 
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[3], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[3].tv_nsec + periods[3];
