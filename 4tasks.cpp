@@ -10,7 +10,7 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 10
+#define INNERLOOP 100
 #define OUTERLOOP 2000
 
 // mutex semaphores
@@ -78,6 +78,8 @@ int main()
         if(i) task2_code();
         if(i == 2) task3_code();
         if(i == 3) task4_code();
+
+		clock_gettime(CLOCK_REALTIME, &time_2);
 
         // compute the Worst Case Execution Time (in real time it should be repeated more times)
         WCET[i]= 1000000000*(time_2.tv_sec - time_1.tv_sec)+(time_2.tv_nsec-time_1.tv_nsec);
@@ -168,7 +170,7 @@ int main()
   	for (int i = 0; i < NTASKS; i++)
     	{
       		printf ("\nMissed Deadlines Task %d=%d", i, missed_deadlines[i]);
-		fflush(stdout);
+			fflush(stdout);
     	}
   	exit(0);
 }
