@@ -7,11 +7,13 @@
 #include <sys/types.h>
 #include <sys/types.h>
 
+// defining colours to make the sceduling more readable
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
 #define KYEL  "\x1B[33m"
 #define KBLU  "\x1B[34m"
+#define KWHT  "\x1B[37m"
 
 // define the number of tasks
 #define NTASKS 4
@@ -42,7 +44,14 @@ void *task3( void *);
 void *task4( void *);
 
 // define an array for storing the period values
-long int periods[NTASKS];
+
+// T1 = 80ms
+// T2 = 100ms
+// T3 = 160ms
+// T4 = 200ms
+// set task periods in nanoseconds
+long int periods[NTASKS] = {80000000, 100000000, 160000000, 200000000};
+
 struct timespec next_arrival_time[NTASKS];
 double WCET[NTASKS];
 pthread_attr_t attributes[NTASKS];
@@ -50,23 +59,35 @@ pthread_t thread_id[NTASKS];
 struct sched_param parameters[NTASKS];
 int missed_deadlines[NTASKS];
 
+// The hyperperiod H = lcm(T1,T2,T3,T4) = 800ms
+// In this time interval H tasks will be executed different time, in particular:
+// T1 will be executed 10 times;
+// T2 will be executed 8 times;
+// T3 will be executed 5 times;
+// T3 will be executed 4 times.
+
+// To have always all tasks finishing together I compute H and then use it to compute the times
+
+//Hyperperiod
+long int H = 800000000;
+// definingn hoe many hyperperiods want to schedule
+int n_hyper = 1;
+long int executions_task1 = n_hyper*H/periods[0];
+long int executions_task2 = n_hyper*H/periods[1];
+long int executions_task3 = n_hyper*H/periods[2];
+long int executions_task4 = n_hyper*H/periods[3];
+
 int main()
 {
-    // set task periods in nanoseconds
-    // T1 = 80ms
-    // T2 = 100ms
-    // T3 = 160ms
-    // T4 = 200ms
-    periods[0] = 80000000;
-    periods[1] = 100000000;
-    periods[2] = 160000000;
-    periods[3] = 200000000;
 
     // assign max and min priority in the task set
     struct sched_param priomax;
     priomax.sched_priority = sched_get_priority_max(SCHED_FIFO);
     struct sched_param priomin;
     priomin.sched_priority = sched_get_priority_min(SCHED_FIFO);
+
+	printf("%sTask 1: T1 = %ld ms\n%sTask 2: T2 = %ld ms\n%sTask 3: T3 = %ld ms\n%sTask 4: T4 = %ld ms\n%sHyperperiod: H = %ld ms\n", KRED, periods[0]/100000, KBLU, periods[1]/100000, KGRN, periods[2]/100000, KYEL, periods[3]/100000, KWHT, H/100000);
+	fflush(stdout);
 
     // set the maximun priority to the current thread (need to be superuser)
     if(!getuid()) pthread_setschedparam(pthread_self(),SCHED_FIFO,&priomax);
@@ -274,7 +295,7 @@ void *task1( void *ptr)
 
    	//execute the task one hundred times... it should be an infinite loop (too dangerous)
   	int i=0;
-  	for (i=0; i < 100; i++)
+  	for (i=0; i < executions_task1; i++)
     {
       		// execute application specific code
 		task1_code();
@@ -363,7 +384,7 @@ void *task2( void *ptr )
 	pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cset);
 
 	int i=0;
-  	for (i=0; i < 100; i++)
+  	for (i=0; i < executions_task2; i++)
     {
         task2_code();
 
@@ -423,7 +444,7 @@ void *task3( void *ptr)
 	pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cset);
 
 	int i=0;
-  	for (i=0; i < 100; i++)
+  	for (i=0; i < executions_task3; i++)
     {
         task3_code();
 
@@ -483,7 +504,7 @@ void *task4( void *ptr)
 	pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cset);
 
 	int i=0;
-  	for (i=0; i < 100; i++)
+  	for (i=0; i < executions_task4; i++)
     {
         task4_code();
 
