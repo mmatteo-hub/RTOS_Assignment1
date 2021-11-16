@@ -7,6 +7,15 @@
 #include <sys/types.h>
 #include <sys/types.h>
 
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+
 // define the number of tasks
 #define NTASKS 4
 
@@ -82,7 +91,7 @@ int main()
 
         // compute the Worst Case Execution Time (in real time it should be repeated more times)
         WCET[i]= 1000000000*(time_2.tv_sec - time_1.tv_sec)+(time_2.tv_nsec-time_1.tv_nsec);
-      	printf("\nWorst Case Execution Time %d = %f \n", i, WCET[i]);
+      	printf("\n%sWorst Case Execution Time %d = %f \n", KNRM, i, WCET[i]);
         fflush(stdout);
     }
 
@@ -101,13 +110,13 @@ int main()
     // Check the sufficient condition: if not satisfied, exit
     if(U > Ulub)
     {
-        printf("\n U=%lf Ulub=%lf Non schedulable Task Set", U, Ulub);
+        printf("\n %sU=%lf Ulub=%lf Non schedulable Task Set", KNRM, U, Ulub);
       	fflush(stdout);
         return(-1);
     }
     else
     {
-        printf("\n U=%lf Ulub=%lf Scheduable Task Set", U, Ulub);
+        printf("\n %sU=%lf Ulub=%lf Scheduable Task Set", KNRM, U, Ulub);
         fflush(stdout);
         sleep(2);
     }
@@ -184,7 +193,7 @@ int main()
 	// period, but the end of the first period and beginning of the next one. 
   	for (int i = 0; i < NTASKS; i++)
     	{
-      		printf ("\nMissed Deadlines Task %d = %d\n", i, missed_deadlines[i]);
+      		printf ("\n%sMissed Deadlines Task %d = %d\n", KNRM, i, missed_deadlines[i]);
 			fflush(stdout);
     	}
 
@@ -204,7 +213,7 @@ int main()
 void task1_code()
 {
 	// print the id of the current task
-  	printf(" 1[ "); fflush(stdout);
+  	printf(" %s1[ ",KRED); fflush(stdout);
 
 	double uno;
   	for (int i = 0; i < OUTERLOOP; i++)
@@ -295,7 +304,7 @@ void *task1( void *ptr)
 void task2_code()
 {
 	// print the id of the current task
-  	printf(" 2[ "); fflush(stdout);
+  	printf(" %s2[ ", KBLU); fflush(stdout);
 	
   	double uno;
   	for (int i = 0; i < OUTERLOOP; i++)
@@ -375,7 +384,7 @@ void *task2( void *ptr )
 void task3_code()
 {
 	// print the id of the current task
-  	printf(" 3[ "); fflush(stdout);
+  	printf(" %s3[ ", KGRN); fflush(stdout);
 
 	double uno;
   	for (int i = 0; i < OUTERLOOP; i++)
@@ -435,7 +444,7 @@ void *task3( void *ptr)
 void task4_code()
 {
 	// print the id of the current task
-  	printf(" 4[ "); fflush(stdout);
+  	printf(" %s4[ ", KYEL); fflush(stdout);
 	
 	double uno;
   	for (int i = 0; i < OUTERLOOP; i++)
