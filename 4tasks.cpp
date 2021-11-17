@@ -21,6 +21,19 @@
 #define INNERLOOP 250
 #define OUTERLOOP 500
 
+// function to waste time during tasks
+void waste_time()
+{
+	double uno;
+		for (int i = 0; i < OUTERLOOP; i++)
+		{
+			for (int j = 0; j < INNERLOOP; j++)
+			{
+				uno = rand()*rand()%10;
+			}
+		}
+}
+
 // mutex semaphores
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
@@ -248,14 +261,9 @@ void task1_code()
 
 	// print the id of the current task
   	printf(" %s1[ ", KRED); fflush(stdout);
-	double uno;
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+	
+	// waste time
+	waste_time();
 	
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
@@ -276,13 +284,8 @@ void task1_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ",KRED); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
@@ -303,13 +306,8 @@ void task1_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KRED); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
   	// print the id of the current task
   	printf(" %s]1 ", KRED); fflush(stdout);
@@ -358,14 +356,8 @@ void task2_code()
 	// print the id of the current task
   	printf(" %s2[ ", KBLU); fflush(stdout);
 	
-  	double uno;
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
@@ -385,13 +377,8 @@ void task2_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KBLU); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
@@ -412,13 +399,8 @@ void task2_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KBLU); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
   	// print the id of the current task
   	printf(" %s]2 ", KBLU); fflush(stdout);
@@ -457,14 +439,8 @@ void task3_code()
 	// print the id of the current task
   	printf(" %s3[ ", KGRN); fflush(stdout);
 
-	double uno;
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+	// waste time
+	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
@@ -484,13 +460,8 @@ void task3_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KGRN); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
 	// print the id of the current task
   	printf(" ]3 "); fflush(stdout);
@@ -528,14 +499,8 @@ void task4_code()
 	// print the id of the current task
   	printf(" %s4[ ", KYEL); fflush(stdout);
 	
-	double uno;
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+	// waste time
+	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
@@ -555,13 +520,8 @@ void task4_code()
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KYEL); fflush(stdout);
 
-  	for (int i = 0; i < OUTERLOOP; i++)
-	{
-		for (int j = 0; j < INNERLOOP; j++)
-		{
-			uno = rand()*rand()%10;
-		}
-	}
+  	// waste time
+	waste_time();
 
   	// print the id of the current task
   	printf(" %s]4 ", KYEL); fflush(stdout);
