@@ -18,8 +18,8 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 10
-#define OUTERLOOP 2000
+#define INNERLOOP 250
+#define OUTERLOOP 500
 
 // mutex semaphores
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
@@ -130,7 +130,7 @@ int main()
 
     for(int i = 0; i < NTASKS; i++)
     {
-        U += (WCET[i]/periods[i] + duration1/periods[0] + duration2/periods[2] + duration3/periods[2] + duration4/periods[3]);
+        U += (WCET[i]/periods[i] + duration1/periods[0] + duration2/periods[1] + duration3/periods[2] + duration4/periods[3]);
     }
     
     // compute Ulub by considering we do not have harmonic relationships between periods
@@ -141,13 +141,13 @@ int main()
     // Check the sufficient condition: if not satisfied, exit
     if(U > Ulub)
     {
-        printf("\n %sU=%lf Ulub=%lf Non schedulable Task Set", KNRM, U, Ulub);
+        printf("\n %sU=%lf Ulub=%lf Non schedulable Task Set\n", KNRM, U, Ulub);
       	fflush(stdout);
         return(-1);
     }
     else
     {
-        printf("\n %sU=%lf Ulub=%lf Scheduable Task Set", KNRM, U, Ulub);
+        printf("\n %sU=%lf Ulub=%lf Scheduable Task Set\n", KNRM, U, Ulub);
         fflush(stdout);
         sleep(2);
     }
@@ -271,6 +271,7 @@ void task1_code()
 	// release the semaphore
 	pthread_mutex_unlock(&mutex1);
 	// store the value of the first critical section
+	critical_sec_1.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_1.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ",KRED); fflush(stdout);
@@ -297,6 +298,7 @@ void task1_code()
 	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
 	// store the value of the first critical section
+	critical_sec_1.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_1.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KRED); fflush(stdout);
@@ -378,6 +380,7 @@ void task2_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex1);
 	// store the value of the first critical section
+	critical_sec_2.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_2.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KBLU); fflush(stdout);
@@ -404,6 +407,7 @@ void task2_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
 	// store the value of the first critical section
+	critical_sec_2.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_2.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KBLU); fflush(stdout);
@@ -475,6 +479,7 @@ void task3_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
 	// store the value of the first critical section
+	critical_sec_3.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_3.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KGRN); fflush(stdout);
@@ -545,6 +550,7 @@ void task4_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex2);
 	// store the value of the first critical section
+	critical_sec_4.tv_sec += (time_2.tv_sec - time_1.tv_sec);
 	critical_sec_4.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KYEL); fflush(stdout);
