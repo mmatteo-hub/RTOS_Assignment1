@@ -18,8 +18,8 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 250
-#define OUTERLOOP 500
+#define INNERLOOP 50
+#define OUTERLOOP 100
 
 // function to waste time during tasks
 void waste_time()
@@ -43,6 +43,10 @@ pthread_mutex_t mutex3 = PTHREAD_MUTEX_INITIALIZER;
 int T1T2; // Task1 shall write something into T1T2, Task 2 shall read from it.
 int T1T4; // Task1 shall write something into T1T4, Task 4 shall read from it.
 int T2T3; // Task2 shall write something into T2T3, Task 3 shall read from it.
+
+// defining critical sections for each task
+
+// defining the duration of each critical section
 
 // code of periodic tasks
 void task1_code();
@@ -289,10 +293,16 @@ void task1_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
+	// waste time
+	waste_time();
 	// print to know the program is inside the critical section
 	printf(" %sP(S2) ", KRED); fflush(stdout);
+	// waste time
+	waste_time();
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
+	// waste time
+	waste_time();
 	// write on the variable by adding 1 each time
 	T1T4 += 2;
 	// take the time when the critical section ends
@@ -363,6 +373,8 @@ void task2_code()
 	pthread_mutex_lock(&mutex1);
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KBLU); fflush(stdout);
+	// waste time
+	waste_time();
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// write on the variable by adding 1 each time
@@ -386,8 +398,12 @@ void task2_code()
 	printf(" %sP(S2) ", KBLU); fflush(stdout);
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
+	// waste time
+	waste_time();
+	// waste time
+	waste_time();
 	// write on the variable by adding 3 each time
-	T2T3 += 3;
+	T2T3 *= 2;
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	printf(" %s... writing on T2T3 ... ", KBLU); fflush(stdout);
@@ -450,6 +466,8 @@ void task3_code()
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// write on the variable by adding 1 each time
 	printf(" %sread T2T3 = %d ", KGRN, T2T3); fflush(stdout);
+	// waste time
+	waste_time();
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	// releases the semaphore
