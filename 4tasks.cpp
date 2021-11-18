@@ -18,8 +18,11 @@
 // define the number of tasks
 #define NTASKS 4
 
-#define INNERLOOP 50
-#define OUTERLOOP 100
+// define the numnber of mutexes
+#define NMUTEXES 3
+
+#define INNERLOOP 100
+#define OUTERLOOP 250
 
 // function to waste time during tasks
 void waste_time()
@@ -44,7 +47,52 @@ int T1T2; // Task1 shall write something into T1T2, Task 2 shall read from it.
 int T1T4; // Task1 shall write something into T1T4, Task 4 shall read from it.
 int T2T3; // Task2 shall write something into T2T3, Task 3 shall read from it.
 
-// defining critical sections for each task
+/*
+#######################################################
+#													  #
+#  defining critical sections for each task:          #
+#  z_11 : critical section where J1 writes on T1T2    #
+#  z_12 : critical section where J1 writes on T1T4    #
+#  z_21 : critical section where J2 read from T1T2    #
+#  z_22 : critical section where J2 writes on T2T3    #
+#  z_31 : critical section where J3 reads from T2T3   #	  
+#  z_41 : critical section where J4 reads from T1T4   #
+#													  #
+#  beta_1 = { z_11, z_12 }							  #
+#  beta_2 = { z_21, z_22 }							  #	
+#  beta_3 = { z_31 }								  #	
+#  beta_4 = { z_41 }								  #
+#													  #
+#  S1 ( z_11, z_21 )		 		         		  #
+#  S2 ( z_12, z_41 )				     			  #
+#  S3 ( z_22, z_31 )							 	  #
+#													  #
+#  beta*_12 = { z_21 }								  #
+#  beta*_13 = { 0 }									  #
+#  beta*_14 = { z_41 }								  #
+#  beta*_23 = { z_31 }							 	  #
+#  beta*_24 = { 0 }									  #
+#  beta*_34 = { 0 }									  #
+#													  #
+#  beta*_1 = { z_21 }								  #
+#  beta*_2 = { z_31 }								  #
+#  beta*_3 = { 0 }									  #
+#  beta*_4 = { 0 }									  #
+#													  #
+#  Since there is only 1 critical section that can    #
+#  block  he task Ji  we can assume that it will be   #
+#  also the longest blocking section 				  #
+#												      #	
+#######################################################
+*/
+
+// defining variables to store the duration of each critical sections
+struct timespec d_11 ;
+struct timespec d_12 ;
+struct timespec d_21 ;
+struct timespec d_22 ;
+struct timespec d_31 ;
+struct timespec d_41 ;
 
 // defining the duration of each critical section
 
@@ -83,7 +131,7 @@ int missed_deadlines[NTASKS];
 // T3 will be executed 5 times;
 // T3 will be executed 4 times.
 
-// To have always all tasks finishing together I compute H and then use it to compute the times
+// To have always all tasks finishing together I compute H and then use it to compute the times of execution of hyperperiod
 
 //Hyperperiod
 long int H = 800000000;
@@ -94,12 +142,6 @@ long int executions_task1 = n_hyper*H/periods[0];
 long int executions_task2 = n_hyper*H/periods[1];
 long int executions_task3 = n_hyper*H/periods[2];
 long int executions_task4 = n_hyper*H/periods[3];
-
-// defining variables to store the time of critical sections in every taks
-struct timespec critical_sec_1 ;
-struct timespec critical_sec_2 ;
-struct timespec critical_sec_3 ;
-struct timespec critical_sec_4 ;
 
 int main()
 {
@@ -132,39 +174,57 @@ int main()
 
         // compute the Worst Case Execution Time (in real time it should be repeated more times)
         WCET[i]= 1000000000*(time_2.tv_sec - time_1.tv_sec)+(time_2.tv_nsec-time_1.tv_nsec);
-      	printf("\n%sWorst Case Execution Time %d = %f ms\n", KNRM, i, WCET[i]/1000000);
+      	printf("\n%sWorst Case Execution Time %d = %f ms\n\n", KNRM, i, WCET[i]/1000000);
         fflush(stdout);
     }
 
-    // compute U
+	printf("%sCheck now the sufficient condition for the schedulability.\n", KWHT); fflush(stdout);
+
+    // compute U and Ulub at each iteration
     double U = 0;
+	double Ulub = 0;
+	for(int i = 1; i <= NTASKS; i++)
+	{
+		switch(i)
+		{
+			case 1: // J1
+				U += (WCET[i-1]/periods[i-1] + (d_21.tv_sec*1000000000 + d_21.tv_nsec)/periods[i-1]);
+				Ulub = i*(pow(2.0,1.0/i)-1.0);
+				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
+				fflush(stdout);
+				break;
 
-	// converting time into double
-	double duration1 = (critical_sec_1.tv_sec)*1000000000 + (critical_sec_1.tv_nsec);
-	double duration2 = (critical_sec_2.tv_sec)*1000000000 + (critical_sec_2.tv_nsec);
-	double duration3 = (critical_sec_3.tv_sec)*1000000000 + (critical_sec_3.tv_nsec);
-	double duration4 = (critical_sec_4.tv_sec)*1000000000 + (critical_sec_4.tv_nsec);
+			case 2: // J2
+				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + (d_31.tv_sec*1000000000 + d_31.tv_nsec)/periods[i-1]);
+				Ulub = i*(pow(2.0,1.0/i)-1.0);
+				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
+				fflush(stdout);
+				break;
 
-    for(int i = 0; i < NTASKS; i++)
-    {
-        U += (WCET[i]/periods[i] + duration1/periods[0] + duration2/periods[1] + duration3/periods[2] + duration4/periods[3]);
-    }
-    
-    // compute Ulub by considering we do not have harmonic relationships between periods
-    double Ulub = NTASKS*(pow(2.0,(1.0/NTASKS)) -1);
+			case 3: // J3
+				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + WCET[i-3]/periods[i-3]);
+				Ulub = i*(pow(2.0,1.0/i)-1.0);
+				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
+				fflush(stdout);
+				break;
 
-    // if there are harmonic relationships Ulub = 1;
+			case 4: // J4
+				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + WCET[i-3]/periods[i-3] + WCET[i-4]/periods[i-4]);
+				Ulub = i*(pow(2.0,1.0/i)-1.0);
+				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
+				fflush(stdout);
+				break;
+		}
+	}
 
     // Check the sufficient condition: if not satisfied, exit
     if(U > Ulub)
     {
-        printf("\n %sU=%lf Ulub=%lf Non schedulable Task Set\n", KNRM, U, Ulub);
-      	fflush(stdout);
         return(-1);
     }
     else
     {
-        printf("\n %sU=%lf Ulub=%lf Scheduable Task Set\n", KNRM, U, Ulub);
+        printf("\n %sSCHEDULING:\n", KNRM);
         fflush(stdout);
         sleep(2);
     }
@@ -283,8 +343,8 @@ void task1_code()
 	// release the semaphore
 	pthread_mutex_unlock(&mutex1);
 	// store the value of the first critical section
-	critical_sec_1.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_1.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_11.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_11.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ",KRED); fflush(stdout);
 
@@ -311,8 +371,8 @@ void task1_code()
 	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
 	// store the value of the first critical section
-	critical_sec_1.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_1.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_12.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_12.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KRED); fflush(stdout);
 
@@ -384,8 +444,8 @@ void task2_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex1);
 	// store the value of the first critical section
-	critical_sec_2.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_2.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_21.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_21.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KBLU); fflush(stdout);
 
@@ -410,8 +470,8 @@ void task2_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
 	// store the value of the first critical section
-	critical_sec_2.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_2.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_22.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_22.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KBLU); fflush(stdout);
 
@@ -473,8 +533,8 @@ void task3_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
 	// store the value of the first critical section
-	critical_sec_3.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_3.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_31.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_31.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KGRN); fflush(stdout);
 
@@ -533,8 +593,8 @@ void task4_code()
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex2);
 	// store the value of the first critical section
-	critical_sec_4.tv_sec += (time_2.tv_sec - time_1.tv_sec);
-	critical_sec_4.tv_nsec += (time_2.tv_nsec - time_1.tv_nsec);
+	d_41.tv_sec = (time_2.tv_sec - time_1.tv_sec);
+	d_41.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KYEL); fflush(stdout);
 
