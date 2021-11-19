@@ -250,7 +250,6 @@ int main()
 	pthread_mutexattr_init(&mymutexattr);
 	//pthread_mutexattr_getprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
-	int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling);
 
 	// Initialization of semaphores according to tasks period
 	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
@@ -318,9 +317,6 @@ void task1_code()
 	struct timespec time_1;
 	struct timespec time_2;
 
-	waste_time()
-	waste_time()
-
 	// print the id of the current task
   	printf(" %s1[ ", KRED); fflush(stdout);
 	
@@ -328,17 +324,18 @@ void task1_code()
 	waste_time();
 	
 	// take the semaphore
-	pthread_mutex_lock(&mutex1);
-	printf("%sTaken S1 by J1 ", KNRM); fflush(stdout);
+	pthread_mutex_lock(&mutex3);
+	printf("%sTaken S3 by J1 ", KNRM); fflush(stdout);
 
 	// waste time
 	waste_time();
 	// waste time
 	waste_time();
+	waste_time();
 	
 	// semaphore added to have a deadlock
-	pthread_mutex_lock(&mutex3);
-	printf("%sTaken S3 by J1 ", KNRM); fflush(stdout);
+	pthread_mutex_lock(&mutex1);
+	printf("%sTaken S1 by J1 ", KNRM); fflush(stdout);
 
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KRED); fflush(stdout);
@@ -350,16 +347,16 @@ void task1_code()
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	printf(" %s... writing on T1T2 ... ", KRED); fflush(stdout);
 
-	pthread_mutex_unlock(&mutex3);
-	printf("%sReleased S3 by J1 ", KNRM); fflush(stdout);
+	pthread_mutex_unlock(&mutex1);
+	printf("%sReleased S1 by J1 ", KNRM); fflush(stdout);
 
 	// waste time
 	waste_time();
 	waste_time();
 
 	// release the semaphore
-	pthread_mutex_unlock(&mutex1);
-	printf("%sReleased S1 by J1 ", KNRM); fflush(stdout);
+	pthread_mutex_unlock(&mutex3);
+	printf("%sReleased S3 by J1 ", KNRM); fflush(stdout);
 
 	// store the value of the first critical section
 	d_11.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -577,6 +574,7 @@ void task3_code()
 	// waste time
 	waste_time();
 	waste_time();
+	waste_time();
 	
 	// semaphor to create deadlock
 	pthread_mutex_lock(&mutex1);
@@ -676,7 +674,7 @@ void task4_code()
 	pthread_mutex_unlock(&mutex2);
 	printf("%sReleased S2 by J4", KNRM); fflush(stdout);
 
-	
+
 	waste_time();
 	
 	// store the value of the first critical section
