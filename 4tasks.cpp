@@ -21,7 +21,7 @@
 // define the numnber of mutexes
 #define NMUTEXES 3
 
-#define INNERLOOP 100
+#define INNERLOOP 50
 #define OUTERLOOP 250
 
 // function to waste time during tasks
@@ -74,7 +74,7 @@ int T2T3; // Task2 shall write something into T2T3, Task 3 shall read from it.
 #  beta*_24 = { 0 }									  #
 #  beta*_34 = { 0 }									  #
 #													  #
-#  beta*_1 = { z_21 }								  #
+#  beta*_1 = { z_21, z_41 }							  #
 #  beta*_2 = { z_31 }								  #
 #  beta*_3 = { 0 }									  #
 #  beta*_4 = { 0 }									  #
@@ -124,38 +124,25 @@ pthread_t thread_id[NTASKS];
 struct sched_param parameters[NTASKS];
 int missed_deadlines[NTASKS];
 
-// The hyperperiod H = lcm(T1,T2,T3,T4) = 800ms
-// In this time interval H, tasks will be executed different times, in particular:
-// T1 will be executed 10 times;
-// T2 will be executed 8 times;
-// T3 will be executed 5 times;
-// T3 will be executed 4 times.
-
-// To have always all tasks finishing together I compute H and then use it to compute the times of execution of hyperperiod
-
-//Hyperperiod
-long int H = 800000000;
-// definingn of how many hyperperiods want to schedule
-int n_hyper = 1;
 // calculing the number of times each task has to be executed
-long int executions_task1 = n_hyper*H/periods[0];
-long int executions_task2 = n_hyper*H/periods[1];
-long int executions_task3 = n_hyper*H/periods[2];
-long int executions_task4 = n_hyper*H/periods[3];
+long int executions_task1 = 1;
+long int executions_task2 = 1;
+long int executions_task3 = 1;
+long int executions_task4 = 1;
 
 int main()
 {
     // assign max and min priority in the task set
     struct sched_param priomax;
-    priomax.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    priomax.sched_priority = sched_get_priority_max(SCHED_OTHER);
     struct sched_param priomin;
-    priomin.sched_priority = sched_get_priority_min(SCHED_FIFO);
+    priomin.sched_priority = sched_get_priority_min(SCHED_OTHER);
 
-	printf("%sTask 1: T1 = %ld ms\n%sTask 2: T2 = %ld ms\n%sTask 3: T3 = %ld ms\n%sTask 4: T4 = %ld ms\n%sHyperperiod: H = %ld ms\n", KRED, periods[0]/1000000, KBLU, periods[1]/1000000, KGRN, periods[2]/1000000, KYEL, periods[3]/1000000, KWHT, H/1000000);
+	printf("%sTask 1: T1 = %ld ms\n%sTask 2: T2 = %ld ms\n%sTask 3: T3 = %ld ms\n%sTask 4: T4 = %ld ms\n", KRED, periods[0]/1000000, KBLU, periods[1]/1000000, KGRN, periods[2]/1000000, KYEL, periods[3]/1000000);
 	fflush(stdout);
 
     // set the maximun priority to the current thread (need to be superuser)
-    if(!getuid()) pthread_setschedparam(pthread_self(),SCHED_FIFO,&priomax);
+    if(!getuid()) pthread_setschedparam(pthread_self(),SCHED_OTHER,&priomax);
 
     // execute all tasks in standalone modality to measure the execution time
     int i;
@@ -188,7 +175,12 @@ int main()
 		switch(i)
 		{
 			case 1: // J1
-				U += (WCET[i-1]/periods[i-1] + (d_21.tv_sec*1000000000 + d_21.tv_nsec)/periods[i-1]);
+				// since J1 has two possible critical section, z_21 and z_41, it has to be determined the longest
+				// in order to determine the longest blocking section
+				struct timespec B;
+				if((d_21.tv_sec*1000000000 + d_21.tv_nsec) > (d_41.tv_sec*1000000000 + d_41.tv_nsec)) B = d_21;
+				else B = d_41;
+				U += (WCET[i-1]/periods[i-1] + (B.tv_sec*1000000000 + B.tv_nsec)/periods[i-1]);
 				Ulub = i*(pow(2.0,1.0/i)-1.0);
 				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
 				fflush(stdout);
@@ -230,7 +222,7 @@ int main()
     }
 
     // set minimun priority to the current task
-    if (getuid() == 0) pthread_setschedparam(pthread_self(),SCHED_FIFO,&priomin);
+    if (getuid() == 0) pthread_setschedparam(pthread_self(),SCHED_OTHER,&priomin);
 
     // set the attributes to the tasks
     for(int i = 0; i < NTASKS; i++)
@@ -243,7 +235,7 @@ int main()
       	pthread_attr_setinheritsched(&(attributes[i]), PTHREAD_EXPLICIT_SCHED);
       
 		// set the attributes to set the SCHED_FIFO policy (pthread_attr_setschedpolicy)
-		pthread_attr_setschedpolicy(&(attributes[i]), SCHED_FIFO);
+		pthread_attr_setschedpolicy(&(attributes[i]), SCHED_OTHER);
 
 		// properly set the parameters to assign the priority inversely proportional 
 		// to the period
@@ -256,6 +248,7 @@ int main()
 	// attributes for semaphores
 	pthread_mutexattr_t mymutexattr;
 	pthread_mutexattr_init(&mymutexattr);
+	//pthread_mutexattr_getprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 	int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling);
 
@@ -297,11 +290,13 @@ int main()
   	pthread_join( thread_id[2], NULL);
 	pthread_join( thread_id[3], NULL);
 
+	printf("\n"); fflush(stdout);
+
   	// set the next arrival time for each task. This is not the beginning of the first
 	// period, but the end of the first period and beginning of the next one. 
   	for (int i = 0; i < NTASKS; i++)
     	{
-      		printf ("\n%sMissed Deadlines Task %d = %d\n", KNRM, i, missed_deadlines[i]);
+      		printf ("%sMissed Deadlines Task %d = %d\n", KNRM, i+1, missed_deadlines[i]);
 			fflush(stdout);
     	}
 
@@ -323,6 +318,9 @@ void task1_code()
 	struct timespec time_1;
 	struct timespec time_2;
 
+	waste_time()
+	waste_time()
+
 	// print the id of the current task
   	printf(" %s1[ ", KRED); fflush(stdout);
 	
@@ -331,6 +329,17 @@ void task1_code()
 	
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
+	printf("%sTaken S1 by J1 ", KNRM); fflush(stdout);
+
+	// waste time
+	waste_time();
+	// waste time
+	waste_time();
+	
+	// semaphore added to have a deadlock
+	pthread_mutex_lock(&mutex3);
+	printf("%sTaken S3 by J1 ", KNRM); fflush(stdout);
+
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KRED); fflush(stdout);
 	// take the time when the critical section starts
@@ -340,11 +349,22 @@ void task1_code()
 	// get the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	printf(" %s... writing on T1T2 ... ", KRED); fflush(stdout);
+
+	pthread_mutex_unlock(&mutex3);
+	printf("%sReleased S3 by J1 ", KNRM); fflush(stdout);
+
+	// waste time
+	waste_time();
+	waste_time();
+
 	// release the semaphore
 	pthread_mutex_unlock(&mutex1);
+	printf("%sReleased S1 by J1 ", KNRM); fflush(stdout);
+
 	// store the value of the first critical section
 	d_11.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_11.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ",KRED); fflush(stdout);
 
@@ -353,26 +373,37 @@ void task1_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
+	printf("%sTaken S2 by J1 ", KNRM); fflush(stdout);
+	
 	// waste time
 	waste_time();
+
 	// print to know the program is inside the critical section
 	printf(" %sP(S2) ", KRED); fflush(stdout);
+
 	// waste time
 	waste_time();
+
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// waste time
 	waste_time();
+
 	// write on the variable by adding 1 each time
 	T1T4 += 2;
+
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	printf(" %s... writing on T1T4 ... ", KRED); fflush(stdout);
+	
 	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
+	printf("%sReleased S2 by J1 ", KNRM); fflush(stdout);
+	
 	// store the value of the first critical section
 	d_12.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_12.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+	
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KRED); fflush(stdout);
 
@@ -431,8 +462,11 @@ void task2_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
+	printf("%sTaken S1 by J2 ", KNRM); fflush(stdout);
+	
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KBLU); fflush(stdout);
+	
 	// waste time
 	waste_time();
 	// take the time when the critical section starts
@@ -441,11 +475,15 @@ void task2_code()
 	printf(" %sread T1T2 = %d ", KBLU, T1T2); fflush(stdout);
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
+	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex1);
+	printf("%sReleased S1 by J2 ", KNRM); fflush(stdout);
+	
 	// store the value of the first critical section
 	d_21.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_21.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+	
 	// print to know the program is out the critical section
 	printf(" %sV(S1) ", KBLU); fflush(stdout);
 
@@ -454,29 +492,46 @@ void task2_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
+	printf("%sTaken S3 by J2 ", KNRM); fflush(stdout);
+	// waste time
+	waste_time();
+
+	// semaphore to create a deadlock
+	pthread_mutex_lock(&mutex2);
+	printf("%sTaken S2 by J2 ", KNRM); fflush(stdout);
+	
 	// print to know the program is inside the critical section
 	printf(" %sP(S2) ", KBLU); fflush(stdout);
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// waste time
 	waste_time();
-	// waste time
-	waste_time();
 	// write on the variable by adding 3 each time
 	T2T3 *= 2;
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
+	
+	pthread_mutex_unlock(&mutex2);
+	printf("%sReleased S2 by J2 ", KNRM); fflush(stdout);
+	
 	printf(" %s... writing on T2T3 ... ", KBLU); fflush(stdout);
+	
+	waste_time();
+	waste_time();
+	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
+	printf("%sReleased S3 by J2 ", KNRM); fflush(stdout);
+	
 	// store the value of the first critical section
 	d_22.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_22.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+	
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KBLU); fflush(stdout);
 
   	// waste time
-	waste_time();
+	//waste_time();
 
   	// print the id of the current task
   	printf(" %s]2 ", KBLU); fflush(stdout);
@@ -515,31 +570,46 @@ void task3_code()
 	// print the id of the current task
   	printf(" %s3[ ", KGRN); fflush(stdout);
 
-	// waste time
-	waste_time();
-
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
+	printf("%sTaken S3 by J3 ", KNRM); fflush(stdout);
+	
+	// waste time
+	waste_time();
+	waste_time();
+	
+	// semaphor to create deadlock
+	pthread_mutex_lock(&mutex1);
+	printf("%sTaken S1 by J3 ", KNRM); fflush(stdout);
+	
 	// print to know the program is inside the critical section
-	printf(" %sP(S1) ", KGRN); fflush(stdout);
+	printf(" %sP(S3) ", KGRN); fflush(stdout);
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// write on the variable by adding 1 each time
 	printf(" %sread T2T3 = %d ", KGRN, T2T3); fflush(stdout);
-	// waste time
-	waste_time();
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
+	
 	// releases the semaphore
+	pthread_mutex_unlock(&mutex1);
+	printf("%sReleased S1 by J3 ", KNRM); fflush(stdout);
+	
+	// waste time
+	waste_time();
+	
 	pthread_mutex_unlock(&mutex3);
+	printf("%sReleased S3 by J3 ", KNRM); fflush(stdout);
+	
 	// store the value of the first critical section
 	d_31.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_31.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+	
 	// print to know the program is out the critical section
-	printf(" %sV(S1) ", KGRN); fflush(stdout);
+	printf(" %sV(S3) ", KGRN); fflush(stdout);
 
   	// waste time
-	waste_time();
+	//waste_time();
 
 	// print the id of the current task
   	printf(" ]3 "); fflush(stdout);
@@ -576,30 +646,48 @@ void task4_code()
 
 	// print the id of the current task
   	printf(" %s4[ ", KYEL); fflush(stdout);
-	
-	// waste time
-	waste_time();
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
+	printf("%sTaken S2 by J4", KNRM); fflush(stdout);
+	
+	waste_time();
+	
+	// semahpore to create deadlock
+	pthread_mutex_lock(&mutex3);
+	
+	printf("%sTaken S3 by J4", KNRM); fflush(stdout);
 	// print to know the program is inside the critical section
-	printf(" %sP(S1) ", KYEL); fflush(stdout);
+	printf(" %sP(S2) ", KYEL); fflush(stdout);
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
 	// write on the variable by adding 1 each time
 	printf(" %sread T1T4 = %d" , KYEL, T1T4); fflush(stdout);
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
+	
 	// releases the semaphore
+	pthread_mutex_unlock(&mutex3);
+	printf("%sReleased S3 by J4", KNRM); fflush(stdout);
+	
+	waste_time();
+	waste_time();
+	
 	pthread_mutex_unlock(&mutex2);
+	printf("%sReleased S2 by J4", KNRM); fflush(stdout);
+
+	
+	waste_time();
+	
 	// store the value of the first critical section
 	d_41.tv_sec = (time_2.tv_sec - time_1.tv_sec);
 	d_41.tv_nsec = (time_2.tv_nsec - time_1.tv_nsec);
+	
 	// print to know the program is out the critical section
-	printf(" %sV(S1) ", KYEL); fflush(stdout);
+	printf(" %sV(S2) ", KYEL); fflush(stdout);
 
   	// waste time
-	waste_time();
+	//waste_time();
 
   	// print the id of the current task
   	printf(" %s]4 ", KYEL); fflush(stdout);
