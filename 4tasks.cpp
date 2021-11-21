@@ -248,7 +248,6 @@ int main()
 	// attributes for semaphores
 	pthread_mutexattr_t mymutexattr;
 	pthread_mutexattr_init(&mymutexattr);
-	//pthread_mutexattr_getprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
 
 	// Initialization of semaphores according to tasks period
