@@ -248,16 +248,16 @@ int main()
 	// attributes for semaphores
 	pthread_mutexattr_t mymutexattr;
 	pthread_mutexattr_init(&mymutexattr);
-	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT);
+	pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_INHERIT);
 
 	// Initialization of semaphores according to tasks period
-	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
+	//pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
 	pthread_mutex_init(&mutex1, &mymutexattr);
 
-	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
+	//pthread_mutexattr_setprioceiling(&mymutexattr, parameters[0].sched_priority);
 	pthread_mutex_init(&mutex2, &mymutexattr);
 
-	pthread_mutexattr_setprioceiling(&mymutexattr, parameters[1].sched_priority);
+	//pthread_mutexattr_setprioceiling(&mymutexattr, parameters[1].sched_priority);
 	pthread_mutex_init(&mutex3, &mymutexattr);
 
     // delare the variable to contain the return values of pthread_create	
