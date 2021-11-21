@@ -325,7 +325,7 @@ void task1_code()
 	
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
-	printf("%sTaken S3 by J1 ", KNRM); fflush(stdout);
+	printf(" %sTaken S3 by J1 ", KWHT); fflush(stdout);
 
 	// waste time
 	waste_time();
@@ -335,7 +335,7 @@ void task1_code()
 	
 	// semaphore added to have a deadlock
 	pthread_mutex_lock(&mutex1);
-	printf("%sTaken S1 by J1 ", KNRM); fflush(stdout);
+	printf(" %sTaken S1 by J1 ", KWHT); fflush(stdout);
 
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KRED); fflush(stdout);
@@ -347,8 +347,9 @@ void task1_code()
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	printf(" %s... writing on T1T2 ... ", KRED); fflush(stdout);
 
+	// released the semaphore
 	pthread_mutex_unlock(&mutex1);
-	printf("%sReleased S1 by J1 ", KNRM); fflush(stdout);
+	printf(" %sReleased S1 by J1 ", KWHT); fflush(stdout);
 
 	// waste time
 	waste_time();
@@ -356,7 +357,7 @@ void task1_code()
 
 	// release the semaphore
 	pthread_mutex_unlock(&mutex3);
-	printf("%sReleased S3 by J1 ", KNRM); fflush(stdout);
+	printf(" %sReleased S3 by J1 ", KWHT); fflush(stdout);
 
 	// store the value of the first critical section
 	d_11.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -370,7 +371,7 @@ void task1_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
-	printf("%sTaken S2 by J1 ", KNRM); fflush(stdout);
+	printf(" %sTaken S2 by J1 ", KWHT); fflush(stdout);
 	
 	// waste time
 	waste_time();
@@ -395,7 +396,7 @@ void task1_code()
 	
 	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
-	printf("%sReleased S2 by J1 ", KNRM); fflush(stdout);
+	printf(" %sReleased S2 by J1 ", KWHT); fflush(stdout);
 	
 	// store the value of the first critical section
 	d_12.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -459,7 +460,7 @@ void task2_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex1);
-	printf("%sTaken S1 by J2 ", KNRM); fflush(stdout);
+	printf(" %sTaken S1 by J2 ", KWHT); fflush(stdout);
 	
 	// print to know the program is inside the critical section
 	printf(" %sP(S1) ", KBLU); fflush(stdout);
@@ -475,7 +476,7 @@ void task2_code()
 	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex1);
-	printf("%sReleased S1 by J2 ", KNRM); fflush(stdout);
+	printf(" %sReleased S1 by J2 ", KWHT); fflush(stdout);
 	
 	// store the value of the first critical section
 	d_21.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -489,13 +490,13 @@ void task2_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
-	printf("%sTaken S3 by J2 ", KNRM); fflush(stdout);
+	printf(" %sTaken S3 by J2 ", KWHT); fflush(stdout);
 	// waste time
 	waste_time();
 
 	// semaphore to create a deadlock
 	pthread_mutex_lock(&mutex2);
-	printf("%sTaken S2 by J2 ", KNRM); fflush(stdout);
+	printf(" %sTaken S2 by J2 ", KWHT); fflush(stdout);
 	
 	// print to know the program is inside the critical section
 	printf(" %sP(S2) ", KBLU); fflush(stdout);
@@ -508,17 +509,20 @@ void task2_code()
 	// take the time when the critical section ends
 	clock_gettime(CLOCK_REALTIME, &time_2);
 	
+	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
-	printf("%sReleased S2 by J2 ", KNRM); fflush(stdout);
+	printf(" %sReleased S2 by J2 ", KWHT); fflush(stdout);
 	
+	// reading from the variable
 	printf(" %s... writing on T2T3 ... ", KBLU); fflush(stdout);
 	
+	// waste time
 	waste_time();
 	waste_time();
 	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
-	printf("%sReleased S3 by J2 ", KNRM); fflush(stdout);
+	printf(" %sReleased S3 by J2 ", KWHT); fflush(stdout);
 	
 	// store the value of the first critical section
 	d_22.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -526,9 +530,6 @@ void task2_code()
 	
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KBLU); fflush(stdout);
-
-  	// waste time
-	//waste_time();
 
   	// print the id of the current task
   	printf(" %s]2 ", KBLU); fflush(stdout);
@@ -569,7 +570,7 @@ void task3_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex3);
-	printf("%sTaken S3 by J3 ", KNRM); fflush(stdout);
+	printf(" %sTaken S3 by J3 ", KWHT); fflush(stdout);
 	
 	// waste time
 	waste_time();
@@ -578,7 +579,7 @@ void task3_code()
 	
 	// semaphor to create deadlock
 	pthread_mutex_lock(&mutex1);
-	printf("%sTaken S1 by J3 ", KNRM); fflush(stdout);
+	printf(" %sTaken S1 by J3 ", KWHT); fflush(stdout);
 	
 	// print to know the program is inside the critical section
 	printf(" %sP(S3) ", KGRN); fflush(stdout);
@@ -591,13 +592,14 @@ void task3_code()
 	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex1);
-	printf("%sReleased S1 by J3 ", KNRM); fflush(stdout);
+	printf(" %sReleased S1 by J3 ", KWHT); fflush(stdout);
 	
 	// waste time
 	waste_time();
 	
+	// release the semaphore
 	pthread_mutex_unlock(&mutex3);
-	printf("%sReleased S3 by J3 ", KNRM); fflush(stdout);
+	printf(" %sReleased S3 by J3 ", KWHT); fflush(stdout);
 	
 	// store the value of the first critical section
 	d_31.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -647,14 +649,15 @@ void task4_code()
 
 	// take the semaphore
 	pthread_mutex_lock(&mutex2);
-	printf("%sTaken S2 by J4", KNRM); fflush(stdout);
+	printf(" %sTaken S2 by J4", KWHT); fflush(stdout);
 	
+	// waste time
 	waste_time();
 	
 	// semahpore to create deadlock
 	pthread_mutex_lock(&mutex3);
-	
-	printf("%sTaken S3 by J4", KNRM); fflush(stdout);
+	printf(" %sTaken S3 by J4", KWHT); fflush(stdout);
+
 	// print to know the program is inside the critical section
 	printf(" %sP(S2) ", KYEL); fflush(stdout);
 	// take the time when the critical section starts
@@ -666,15 +669,17 @@ void task4_code()
 	
 	// releases the semaphore
 	pthread_mutex_unlock(&mutex3);
-	printf("%sReleased S3 by J4", KNRM); fflush(stdout);
+	printf(" %sReleased S3 by J4", KWHT); fflush(stdout);
 	
+	// waste time
 	waste_time();
 	waste_time();
 	
+	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
-	printf("%sReleased S2 by J4", KNRM); fflush(stdout);
+	printf(" %sReleased S2 by J4", KWHT); fflush(stdout);
 
-
+	// waste time
 	waste_time();
 	
 	// store the value of the first critical section
@@ -683,9 +688,6 @@ void task4_code()
 	
 	// print to know the program is out the critical section
 	printf(" %sV(S2) ", KYEL); fflush(stdout);
-
-  	// waste time
-	//waste_time();
 
   	// print the id of the current task
   	printf(" %s]4 ", KYEL); fflush(stdout);
