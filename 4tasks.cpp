@@ -124,7 +124,7 @@ pthread_t thread_id[NTASKS];
 struct sched_param parameters[NTASKS];
 int missed_deadlines[NTASKS];
 
-#define NEXEC 100
+#define NEXEC 10
 
 // calculing the number of times each task has to be executed
 long int executions_task1 = NEXEC;
