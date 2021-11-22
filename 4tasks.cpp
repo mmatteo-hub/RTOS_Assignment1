@@ -431,7 +431,8 @@ void *task1( void *ptr)
 		// you try by yourself?
 		struct timespec time_1;
 		clock_gettime(CLOCK_REALTIME, &time_1);
-		if(difftime(time_1.tv_nsec,next_arrival_time[0].tv_nsec) > 0) missed_deadlines[0] += 1;
+		if(difftime(time_1.tv_sec,next_arrival_time[0].tv_sec) > 0) missed_deadlines[0] += 1;
+		else if(difftime(time_1.tv_nsec,next_arrival_time[0].tv_nsec) > 0) missed_deadlines[0] += 1;
 
 		// sleep until the end of the current period (which is also the start of the
 		// new one
@@ -550,7 +551,8 @@ void *task2( void *ptr )
 
 		struct timespec time_1;
 		clock_gettime(CLOCK_REALTIME, &time_1);
-		if(difftime(time_1.tv_nsec,next_arrival_time[1].tv_nsec) > 0) missed_deadlines[1] += 1;
+		if(difftime(time_1.tv_sec,next_arrival_time[1].tv_sec) > 0) missed_deadlines[1] += 1;
+		else if(difftime(time_1.tv_nsec,next_arrival_time[1].tv_nsec) > 0) missed_deadlines[1] += 1;
 
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[1], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[1].tv_nsec + periods[1];
@@ -629,7 +631,8 @@ void *task3( void *ptr)
 
 		struct timespec time_1;
 		clock_gettime(CLOCK_REALTIME, &time_1);
-		if(difftime(time_1.tv_nsec,next_arrival_time[2].tv_nsec) > 0) missed_deadlines[2] += 1;
+		if(difftime(time_1.tv_sec,next_arrival_time[2].tv_sec) > 0) missed_deadlines[2] += 1;
+		else if(difftime(time_1.tv_nsec,next_arrival_time[2].tv_nsec) > 0) missed_deadlines[2] += 1;
 
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[2], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[2].tv_nsec + periods[2];
@@ -707,7 +710,8 @@ void *task4( void *ptr)
 
 		struct timespec time_1;
 		clock_gettime(CLOCK_REALTIME, &time_1);
-		if(difftime(time_1.tv_nsec,next_arrival_time[3].tv_nsec) > 0) missed_deadlines[3] += 1;
+		if(difftime(time_1.tv_sec,next_arrival_time[3].tv_sec) > 0) missed_deadlines[3] += 1;
+		else if(difftime(time_1.tv_nsec,next_arrival_time[3].tv_nsec) > 0) missed_deadlines[3] += 1;
 
         clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_arrival_time[3], NULL);
         long int next_arrival_nanoseconds = next_arrival_time[3].tv_nsec + periods[3];
