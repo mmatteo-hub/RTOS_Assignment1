@@ -21,7 +21,7 @@
 // define the numnber of mutexes
 #define NMUTEXES 3
 
-#define INNERLOOP 50
+#define INNERLOOP 75	
 #define OUTERLOOP 250
 
 // function to waste time during tasks
@@ -326,8 +326,6 @@ void task1_code()
 	pthread_mutex_lock(&mutex3);
 	printf(" %sTaken S3 by J1 ", KWHT); fflush(stdout);
 
-	// waste time
-	waste_time();
 	// waste time
 	waste_time();
 	waste_time();
