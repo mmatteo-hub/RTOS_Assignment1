@@ -7,15 +7,15 @@ Deadlock 1: defined among J1 and J3.
 
 Deadlock 2: defined among J2 and J4.
 
-All deadlocks are abilitated and the computation is not affected by them.
+Deadlocks are disabled. To abilitate them uncomment lines: 347, 373, 480, 507, 563, 572, 631, 637
 
 In order to check also the behaviour of the deadlock it can be changed the protocol used and set the PRIORITY INHERITANCE for istance.
 To use this protocol change:
 
-pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT);
+pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT); (line 275)
 
 Then comment lines 278 281 284 (setprioceiling(...)). To change again do the same step reverse.
-It could be necessary doing more than just 1 run of the program to seethe the deadlock
+### It could be necessary doing more than just 1 run of the program to seethe the deadlock ###
 
 */
 #include <pthread.h>
@@ -344,7 +344,7 @@ void task1_code()
   	printf(" %s1[ ", KRED); fflush(stdout);
 	
 	// semaphore added to create a deadlock between J1 and J3
-	pthread_mutex_lock(&mutex3);
+	//pthread_mutex_lock(&mutex3);
 	waste_time();
 
 	// take the time when the critical section starts
@@ -370,7 +370,7 @@ void task1_code()
 	waste_time();
 
 	// releases the semaphore 
-	pthread_mutex_unlock(&mutex3);
+	//pthread_mutex_unlock(&mutex3);
 
 	// store the value of the first critical section
 	d_11.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -477,13 +477,10 @@ void task2_code()
 	waste_time();
 
 	// take the semaphore
-	pthread_mutex_lock(&mutex3);
+	//pthread_mutex_lock(&mutex3);
 
 	// take the time when the critical section starts
 	clock_gettime(CLOCK_REALTIME, &time_1);
-
-	// waste time
-	waste_time();
 
 	// semaphore to create a deadlock
 	pthread_mutex_lock(&mutex2);
@@ -507,7 +504,7 @@ void task2_code()
 	waste_time();
 	
 	// releases the semaphore
-	pthread_mutex_unlock(&mutex3);
+	//pthread_mutex_unlock(&mutex3);
 
 	// store the value of the first critical section
 	d_22.tv_sec = (time_2.tv_sec - time_1.tv_sec);
@@ -563,7 +560,7 @@ void task3_code()
 	}
 
 	// semaphore added to create a deadlock between J1 and J3
-	pthread_mutex_lock(&mutex1);
+	//pthread_mutex_lock(&mutex1);
 
 	// write on the variable by adding 1 each time
 	printf(" %sread T2T3 = %d ", KGRN, T2T3); fflush(stdout);
@@ -572,7 +569,7 @@ void task3_code()
 	waste_time();
 
 	// release the semaphore
-	pthread_mutex_unlock(&mutex1);
+	//pthread_mutex_unlock(&mutex1);
 	waste_time();
 	
 	// release the semaphore
@@ -631,13 +628,13 @@ void task4_code()
 	waste_time();
 	
 	// semahpore to create deadlock
-	pthread_mutex_lock(&mutex3);
+	//pthread_mutex_lock(&mutex3);
 
 	// write on the variable by adding 1 each time
 	printf(" %sread T1T4 = %d" , KYEL, T1T4); fflush(stdout);
 	
 	// releases the semaphore
-	pthread_mutex_unlock(&mutex3);
+	//pthread_mutex_unlock(&mutex3);
 
 	// waste time
 	waste_time();
