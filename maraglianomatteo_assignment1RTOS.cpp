@@ -490,8 +490,7 @@ void task2_code()
 	// waste time
 	waste_time();
 	// write on the variable by adding 3 each time
-	T2T3 += 2;
-	T2T3 *= 3;
+	T2T3 += 5;
 	
 	// release the semaphore
 	pthread_mutex_unlock(&mutex2);
