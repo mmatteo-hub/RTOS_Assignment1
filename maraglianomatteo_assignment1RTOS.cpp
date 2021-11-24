@@ -7,15 +7,17 @@ Deadlock 1: defined among J1 and J3.
 
 Deadlock 2: defined among J2 and J4.
 
-Deadlocks are disabled. To abilitate them uncomment lines: 347, 373, 480, 507, 563, 572, 631, 637
+Deadlocks are disabled. To abilitate them uncomment lines: 349, 375, 482, 509, 565, 574, 633, 639
 
 In order to check also the behaviour of the deadlock it can be changed the protocol used and set the PRIORITY INHERITANCE for istance.
 To use this protocol change:
 
-pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT); (line 275)
+pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT); (line 277)
 
-Then comment lines 278 281 284 (setprioceiling(...)). To change again do the same step reverse.
+Then comment lines 280 283 286 (setprioceiling(...)). To change again do the same step reverse.
 ### It could be necessary doing more than just 1 run of the program to seethe the deadlock ###
+
+To compile: g++ -pthread maraglianomatteo_assignment1RTOS.cpp -o maraglianomatteo_assignment1RTOS ; to execute: ./maraglianomatteo_assignment1RTOS
 
 */
 #include <pthread.h>
