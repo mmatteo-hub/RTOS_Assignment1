@@ -18,8 +18,8 @@ Then comment lines 280 283 286 (setprioceiling(...)). To change again do the sam
 ### It could be necessary doing more than just 1 run of the program to seethe the deadlock ###
 
 To compile: g++ -pthread maraglianomatteo_assignment1RTOS.cpp -o maraglianomatteo_assignment1RTOS ; to execute: ./maraglianomatteo_assignment1RTOS
-
 */
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
