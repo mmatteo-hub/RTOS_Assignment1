@@ -7,14 +7,14 @@ Deadlock 1: defined among J1 and J3.
 
 Deadlock 2: defined among J2 and J4.
 
-Deadlocks are disabled. To abilitate them uncomment lines: 349, 375, 482, 509, 565, 574, 633, 639
+Deadlocks are disabled. To abilitate them uncomment lines: 352, 378, 485, 512, 568, 577, 636, 642
 
 In order to check also the behaviour of the deadlock it can be changed the protocol used and set the PRIORITY INHERITANCE for istance.
 To use this protocol change:
 
-pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT); (line 277)
+pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_PROTECT); with pthread_mutexattr_setprotocol(&mymutexattr, PTHREAD_PRIO_IMHERIT); (line 280)
 
-Then comment lines 280 283 286 (setprioceiling(...)). To change again do the same step reverse.
+Then comment lines 283 286 289 (setprioceiling(...)). To change again do the same step reverse.
 ### It could be necessary doing more than just 1 run of the program to seethe the deadlock ###
 
 To compile: g++ -pthread maraglianomatteo_assignment1RTOS.cpp -o maraglianomatteo_assignment1RTOS ; to execute: ./maraglianomatteo_assignment1RTOS
@@ -101,8 +101,8 @@ int T2T3; // Task2 shall write something into T2T3, Task 3 shall read from it.
 #  beta*_34 = { 0 }									  #
 #													  #
 #  beta*_1 = { z_21, z_41 }							  #
-#  beta*_2 = { z_31 }								  #
-#  beta*_3 = { 0 }									  #
+#  beta*_2 = { z_31, z_41 }							  #
+#  beta*_3 = { z_41 }								  #
 #  beta*_4 = { 0 }									  #
 #													  #
 #  Since there is only 1 critical section that can    #
@@ -203,24 +203,27 @@ int main()
 			case 1: // J1
 				// since J1 has two possible critical section, z_21 and z_41, it has to be determined the longest
 				// in order to determine the longest blocking section
-				struct timespec B;
-				if((d_21.tv_sec*1000000000 + d_21.tv_nsec) > (d_41.tv_sec*1000000000 + d_41.tv_nsec)) B = d_21;
-				else B = d_41;
-				U += (WCET[i-1]/periods[i-1] + (B.tv_sec*1000000000 + B.tv_nsec)/periods[i-1]);
+				struct timespec B1;
+				if((d_21.tv_sec*1000000000 + d_21.tv_nsec) > (d_41.tv_sec*1000000000 + d_41.tv_nsec)) B1 = d_21;
+				else B1 = d_41;
+				U += (WCET[i-1]/periods[i-1] + (B1.tv_sec*1000000000 + B1.tv_nsec)/periods[i-1]);
 				Ulub = i*(pow(2.0,1.0/i)-1.0);
 				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
 				fflush(stdout);
 				break;
 
 			case 2: // J2
-				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + (d_31.tv_sec*1000000000 + d_31.tv_nsec)/periods[i-1]);
+				struct timespec B2;
+				if((d_31.tv_sec*1000000000 + d_31.tv_nsec) > (d_41.tv_sec*1000000000 + d_41.tv_nsec)) B2 = d_31;
+				else B2 = d_41;
+				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + (B2.tv_sec*1000000000 + B2.tv_nsec)/periods[i-1]);
 				Ulub = i*(pow(2.0,1.0/i)-1.0);
 				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
 				fflush(stdout);
 				break;
 
 			case 3: // J3
-				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + WCET[i-3]/periods[i-3]);
+				U += (WCET[i-1]/periods[i-1] + WCET[i-2]/periods[i-2] + WCET[i-3]/periods[i-3] + (d_41.tv_sec*1000000000 + d_41.tv_nsec)/periods[i-1]);
 				Ulub = i*(pow(2.0,1.0/i)-1.0);
 				(U <= Ulub) ? printf("%sSufficient condition satisfied. %sU = %f, Ulub = %f\n", KGRN, KNRM, U, Ulub) : printf("%sSufficient condition not satisfied! %sU = %f, Ulub = %f\n", KRED, KNRM, U, Ulub);
 				fflush(stdout);
